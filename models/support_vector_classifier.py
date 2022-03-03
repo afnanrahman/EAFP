@@ -29,14 +29,11 @@ from sklearn.model_selection import KFold
 
 
 #Scaled, excluding 4 features, with C = 10 and Gamma = 0.1 using the default non-linear kernel
-def SupportVectorClassifier(data):
+def SupportVectorClassifier(data, hyperparameter_grid, remove_cols):
 
-    # Manually removing similar columns (in terms of context)
-    remove = ['total_working_years', 'years_at_company', 'percent_salary_hike',
-                'years_with_curr_manager', 'hourly_rate', 'daily_rate', 
-                'monthly_rate']
+   
     no_attrition = data.drop('attrition', axis=1)
-    no_correlation = [e for e in list(no_attrition.columns) if e not in remove]
+    no_correlation = [e for e in list(no_attrition.columns) if e not in remove_cols]
 
     # Scaling data using StandardScalar module
     sc = StandardScaler()
@@ -55,9 +52,7 @@ def SupportVectorClassifier(data):
     sfs = sfs.fit(X_train, Y_train)
 
     #Hyper parameter tuning
-    param_grid = {"C": [0.01, 0.1, 1, 10, 100],
-              "gamma": [0.01, 0.1, 1, 10, 100]}
-    grid_cv = GridSearchCV(clf, param_grid, verbose=0)
+    grid_cv = GridSearchCV(clf, hyperparameter_grid, verbose=0)
     grid_cv.fit(X_train, Y_train)
 
     #Best hyperparameters
@@ -111,11 +106,20 @@ def SupportVectorClassifier(data):
 
 
 if __name__ == "main":
-    data = pd.read_csv("https://raw.githubusercontent.com/afnanrahman/EAFP/main/data/clean_smote_data.csv")
     RANDOM_STATE = 42
     TRAIN_TEST_SPLIT_PCT = 0.3
 
-    svc = SupportVectorClassifier(data)
+    data = pd.read_csv("https://raw.githubusercontent.com/afnanrahman/EAFP/main/data/clean_smote_data.csv")
+    
+    # Manually will remove similar columns (in terms of context) in data
+    remove = ['total_working_years', 'years_at_company', 'percent_salary_hike',
+                'years_with_curr_manager', 'hourly_rate', 'daily_rate', 
+                'monthly_rate']
+    #hyperparameters used in tuning
+    param_grid = {"C": [0.01, 0.1, 1, 10, 100],
+              "gamma": [0.01, 0.1, 1, 10, 100]}
+
+    svc = SupportVectorClassifier(data, param_grid, remove)
 
     print("Accuracy: %.2f%%" % (np.mean(svc[1])*100))
     print("Precisions: %.2f%%" % (np.mean(svc[2])*100))

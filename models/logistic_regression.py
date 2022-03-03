@@ -11,7 +11,7 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.preprocessing import RobustScaler
 
 
-def LogisticRegressionClassifier(data):
+def LogisticRegressionClassifier(data, hyperparameter_grid):
 
     no_attr = data.drop('attrition', axis=1)
 
@@ -24,12 +24,8 @@ def LogisticRegressionClassifier(data):
 
     log_reg = LogisticRegression(max_iter=1000, random_state = RANDOM_STATE)
     
-    #Hyper parameter tuning using grid search
-    param_grid = {'C': [0, 0.001, 0.005, 0.01, 0.03, 0.1, 1],  
-              'solver': ['newton-cg', 'lbfgs', 'liblinear','sag', 'saga'], 
-              'penalty':['l1', 'l2', 'none', 'elasticnet']}
-   
-    grid = GridSearchCV(log_reg, param_grid, verbose = 0, n_jobs=-1, error_score = 0.0)
+    #Hyper parameter tuning using grid search   
+    grid = GridSearchCV(log_reg, hyperparameter_grid, verbose = 0, n_jobs=-1, error_score = 0.0)
     grid.fit(X_train, Y_train) 
     grid_predictions = grid.predict(X_test) 
 
@@ -50,11 +46,17 @@ def LogisticRegressionClassifier(data):
 
 
 if __name__ == "main":
-    data = pd.read_csv("https://raw.githubusercontent.com/afnanrahman/EAFP/main/data/clean_smote_data.csv")
     RANDOM_STATE = 42
     TRAIN_TEST_SPLIT_PCT = 0.3
 
-    logistic_regression = LogisticRegressionClassifier(data)
+    data = pd.read_csv("https://raw.githubusercontent.com/afnanrahman/EAFP/main/data/clean_smote_data.csv")
+
+    #hyperparameters used in tuning
+    param_grid = {'C': [0, 0.001, 0.005, 0.01, 0.03, 0.1, 1],  
+              'solver': ['newton-cg', 'lbfgs', 'liblinear','sag', 'saga'], 
+              'penalty':['l1', 'l2', 'none', 'elasticnet']}
+
+    logistic_regression = LogisticRegressionClassifier(data, param_grid)
     
     print('Accuracy: ', logistic_regression[1])
     print('Precision: ', logistic_regression[2])
